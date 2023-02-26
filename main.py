@@ -1,50 +1,58 @@
-from pypresence import Presence
+import time
+import discord
 from random import choice
-from time import time
-from config import client_id, gh_url, token
 from discord.ext import commands, tasks
-from sapper import generate
+from pypresence import Presence
+from sapper import generate_minesweeper_board
 
-client = commands.Bot(command_prefix='me.', self_bot=True)
-
-states = ['Он делает это уже давно..', 'Иногда мне кажется что пора прекратить..', 'L-l-let me die', 'so quick to die?', 'Зачееем она берёт..', 'Бог есть! Так алах сказал!']
-details = ['Я гуль..', 'Смотрю pornhub..']
-
-@client.event
-async def on_ready():
-    print('ready')
-    
-    presence.start()
-    
-@client.command()
-async def rick(ctx: commands.Context):
-    await ctx.message.edit(content='https://nextcord.gay/')
-    
-@client.command()
-async def sapper(ctx: commands.Context):
-    await ctx.message.edit(content=generate())
-
-btns = [
+# Constants
+STATES = ['Он делает это уже давно!', 'Играем до победного!']
+DETAILS = ["Разрабатывает интересное", "Изучает что-то новое"]
+BTNS = [
     {
         "label": "GitHub",
-        "url": gh_url,
+        "url": "https://github.com/{nickname}",
     }
 ]
+BOT_PREFIX = ".me"
 
-RPC = Presence(client_id=client_id)
-RPC.connect()
+# Bot initialization
+bot = commands.Bot(
+    command_prefix=BOT_PREFIX,
+    self_bot=True,
+    intents=discord.Intents.all()
+)
 
+# Command definitions
+@bot.command()
+async def sapper(ctx: commands.Context):
+    await ctx.message.edit(content=generate_minesweeper_board())
+
+# Presence loop
 @tasks.loop(seconds=15)
-async def presence():
-    RPC.update(
-        state=choice(states),
-        details=choice(details),
-        large_text='Я жигуль..',
-        small_text='1000-7',
+def update_presence_loop():
+    presence = Presence(client_id=client_id)
+    presence.connect()
+    presence.update(
+        state=choice(STATES),
+        details=choice(DETAILS),
+        large_text='Python/Go',
+        small_text='Программист',
         large_image="pigs",
         small_image="min",
-        start=time()-85000,
-        buttons=btns
+        start=time(),
+        buttons=BTNS
     )
 
-client.run(token)
+# Event handlers
+@bot.event
+async def on_ready():
+    print('ready')
+
+# Main function
+def main():
+    bot.run(token)
+    update_presence_loop.start()
+
+if __name__ == '__main__':
+    main()
