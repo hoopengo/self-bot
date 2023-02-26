@@ -1,86 +1,56 @@
-import random as r
+import random
 
 
-def generate():
+def generate_minesweeper_board():
+    """
+    Generates a Minesweeper game board as a string.
+
+    Returns:
+        A string representation of a Minesweeper game board.
+    """
+    # Mapping of counts to emojis
     views = {
-        0: ':white_large_square:',
-        1: ':one:',
-        2: ':two:',
-        3: ':three:',
-        4: ':four:',
-        5: ':five:',
-        6: ':six:',
-        7: ':seven:',
-        8: ':eight:',
-        9: ':nine:',
-        10: ':keycap_ten:',
+        0: ":white_large_square:",
+        1: ":one:",
+        2: ":two:",
+        3: ":three:",
+        4: ":four:",
+        5: ":five:",
+        6: ":six:",
+        7: ":seven:",
+        8: ":eight:",
+        9: ":nine:",
+        10: ":keycap_ten:",
     }
 
-    table = [
-        [":white_large_square:",":white_large_square:",":white_large_square:",":white_large_square:",":white_large_square:", ":white_large_square:",":white_large_square:"],
-        [":white_large_square:",":white_large_square:",":white_large_square:",":white_large_square:",":white_large_square:", ":white_large_square:",":white_large_square:"],
-        [":white_large_square:",":white_large_square:",":white_large_square:",":white_large_square:",":white_large_square:", ":white_large_square:",":white_large_square:"],
-        [":white_large_square:",":white_large_square:",":white_large_square:",":white_large_square:",":white_large_square:", ":white_large_square:",":white_large_square:"],
-    ]
-    
-    _ = 0
-    while _ < 4:
-        n1 = r.randint(0,3)    
-        n2 = r.randint(0,6)
-        if table[n1][n2] == ":white_large_square:":
-            table[n1][n2] = ":bomb:"
-            _ += 1
-            
-    for v,i in enumerate(table):
-        for k in range(0, len(i)):
-            if table[v][k] == ':bomb:':
+    # Initialize game board with empty cells
+    rows, cols = 4, 7
+    table = [[":white_large_square:"] * cols for _ in range(rows)]
+
+    # Place bombs randomly on the board
+    bomb_indices = random.sample(range(rows * cols), 4)
+    for bomb_index in bomb_indices:
+        row, col = bomb_index // cols, bomb_index % cols
+        table[row][col] = ":bomb:"
+
+    # Count the number of bombs surrounding each cell and update with appropriate emoji
+    for row_idx, row in enumerate(table):
+        for col_idx, cell in enumerate(row):
+            if cell == ":bomb:":
+                # Skip counting for cells containing bombs
                 continue
-                
+
             count = 0
-            
-            force = {
-                0: v-1 if v-1 != -1 else None,
-                1: v if v != -1 else None,
-                2: v+1 if v+1 != -1 else None,
-            }
-            
-            positions = {
-                0: k-1 if k-1 != -1 else None,
-                1: k if k != -1 else None,
-                2: k+1 if k+1 != -1 else None,
-            }
-            
-            for n in range(0,3):
-                if force[n] is None:
-                    continue
-                
-                try:
-                    if table[force[n]][positions[0]] == ":bomb:":
-                        count += 1
-                        
-                except:
-                    pass
-                
-                try:
-                    if table[force[n]][positions[1]] == ":bomb:":
+            for i in range(max(0, row_idx - 1), min(row_idx + 2, rows)):
+                for j in range(max(0, col_idx - 1), min(col_idx + 2, cols)):
+                    if table[i][j] == ":bomb:":
                         count += 1
 
-                except:
-                    pass
-                
-                try:
-                    if table[force[n]][positions[2]] == ":bomb:":
-                        count += 1
+            table[row_idx][col_idx] = views[count]
 
-                except:
-                    pass
-                
-            table[v][k] = views[count]
-            
-    sapper = ''
-    for i in table:
-        for j in i:
-            sapper += f'||{j}||'
-        sapper += '\n'
-        
+    # Format the board as a string and return
+    sapper = ""
+    for row in table:
+        sapper += "".join([f"||{cell}||" for cell in row]) + "\n"
+
     return sapper
